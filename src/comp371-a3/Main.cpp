@@ -36,9 +36,7 @@ bool perspectiveCam = true;
 bool on = false; // bool for moving the heli and rotors
 bool firstPerson = false;
 
-Helicopter heli;
-float a = 50.0f;
-float sqrt2 = sqrtf(2.0f);
+Helicopter heli(50.0f);
 
 auto startTime = std::chrono::high_resolution_clock::now();
 auto lastTime = std::chrono::high_resolution_clock::now();
@@ -77,15 +75,15 @@ void updateSpeed(float delta)
 {
 	if (on && heli.speed < heli.topSpeed)
 	{
-		heli.rotorSpeed = heli.speed += heli.accel * delta / 1000.0f;
+		heli.rotorSpeed = heli.speed += heli.accel * delta;
 	}
 	else if (on && heli.speed > heli.topSpeed)
 	{
-		heli.rotorSpeed = heli.speed -= heli.accel * delta / 1000.0f;
+		heli.rotorSpeed = heli.speed -= heli.accel * delta;
 	}
 	else if (!on && heli.speed > 0.0f)
 	{
-		heli.rotorSpeed = heli.speed -= heli.accel * delta / 1000.0f;
+		heli.rotorSpeed = heli.speed -= heli.accel * delta;
 	}
 	else if (!on && heli.speed < 0.0f)
 	{
@@ -118,59 +116,16 @@ float fps = 0;
 
 void idle(void)
 {
-
 	auto currentTime = std::chrono::high_resolution_clock::now();
-
-	std::chrono::duration<double> deltaSec = currentTime - lastTime;
+	std::chrono::duration<float> deltaSecDuration = currentTime - lastTime;
 	lastTime = currentTime;
 
-	auto deltaMillis = std::chrono::duration_cast<std::chrono::milliseconds>(deltaSec).count();
+	float deltaSec = deltaSecDuration.count();
 
-	static float distanceTravelled = (float)-M_PI_2;
-	distanceTravelled += heli.speed * (float)deltaSec.count();
+	fps = 1.0f / deltaSec;
 
-	fps = 1.0f / deltaSec.count();
-
-	Vector3 lastPos = heli.position;
-
-	heli.position.x = (a * sqrt2 * cosf(distanceTravelled)) / (pow(sinf(distanceTravelled), 2) + 1);
-	heli.position.z = (a * sqrt2 * cosf(distanceTravelled) * sinf(distanceTravelled)) / (pow(sinf(distanceTravelled), 2) + 1);
-
-	static Vector3 dir;
-
-	if (!(heli.position == lastPos))
-	{
-		dir = (heli.position - lastPos).normalized();
-		heli.forward = dir;
-	}
-	else
-	{
-		dir = heli.forward;
-	}
-
-	static Vector3 x(1, 0, 0);
-
-	float dotProd = Vector3::dot(dir, x);
-
-	heli.angle = std::acosf(dotProd) * toDegs * -sign(dir.z);
-
-	heli.pilotPos = heli.position + (dir*2.25) + Vector3(0, 2, 0);
-	heli.pilotLook = heli.pilotPos + dir;
-
-	static Vector3 spotPos;
-	static GLfloat spotPosV[3];
-	static GLfloat spotDir[3];
-
-	spotPos = heli.position + (dir * 4.15);
-	spotPosV[0] = spotPos.x;
-	spotPosV[1] = spotPos.y;
-	spotPosV[2] = spotPos.z;
-
-	spotDir[0] = dir.x;
-	spotDir[1] = dir.y - sqrt2;
-	spotDir[2] = dir.z;
-
-	updateSpeed(deltaMillis);
+	heli.update(deltaSec);
+	updateSpeed(deltaSec);
 
 	updateCamera();
 
@@ -196,9 +151,9 @@ void display()
 	glPopAttrib();
 	glPopMatrix();
 
-	std::string fpsStr = std::to_string(fps);
+	//std::string fpsStr = std::to_string(fps);
 
-	std::cout << fps << std::endl;
+	//std::cout << fps << std::endl;
 
 	//printf_s("%s\n", fpsStr.c_str());
 

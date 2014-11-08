@@ -4,9 +4,13 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
+#include <Windows.h>
+#include <GL/GL.h>
+#include "Vector3.h"
 
 bool IsNearlyEqual(float a, float b);
 float clamp(float val, float lower, float upper);
+void vec2arr(Vector3 vec, GLfloat arr[]);
 
 template<typename T>
 int sign(T val)

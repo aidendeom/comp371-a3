@@ -6,7 +6,7 @@
 class Helicopter
 {
 public:
-	Helicopter();
+	Helicopter(float a);
 	~Helicopter();
 
 	float frontPropAngle;
@@ -19,15 +19,22 @@ public:
 	Vector3 pilotLook;
 	Vector3	forward;
 	const Vector3 pilotPosAnchor{ 2.25f, 2.0f, 0.0f };
+	const Vector3 spotPosAnchor{ 4.15f, 0.0f, 0.0f };
+	Vector3 spotPos;
+	Vector3 spotDir;
 
 	float angle;
 
 	float speed;
 	float topSpeed;
 
+	void update(float deltaTime);
 	void drawHelicopter();
 
 private:
+	float a;
+	float distanceTravelled;
+
 	void drawHeliBody();
 	void drawHeliTail();
 	void drawWing();

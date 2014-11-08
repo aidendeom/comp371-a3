@@ -4,7 +4,16 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
+#include <Windows.h>
+#include <GL/GL.h>
+#include "Vector3.h"
 
+void vec2arr(Vector3 vec, GLfloat arr[])
+{
+	arr[0] = vec.x;
+	arr[1] = vec.y;
+	arr[2] = vec.z;
+}
 
 bool IsNearlyEqual(float a, float b)
 {

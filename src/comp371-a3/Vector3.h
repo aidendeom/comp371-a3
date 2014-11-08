@@ -18,6 +18,12 @@ public:
 	void normalize();
 	Vector3 normalized() const;
 
+	static const Vector3 right;
+	static const Vector3 up;
+	static const Vector3 forward;
+	static const Vector3 zero;
+	static const Vector3 one;
+
 	static float dot(const Vector3& lhs, const Vector3& rhs);
 	static Vector3 cross(const Vector3& lhs, const Vector3& rhs);
 	

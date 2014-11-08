@@ -18,6 +18,12 @@ Vector3::Vector3(const Vector3& other)
 	z = other.z;
 }
 
+const Vector3 Vector3::right(1.0f, 0.0f, 0.0f);
+const Vector3 Vector3::up(0.0f, 1.0f, 0.0f);
+const Vector3 Vector3::forward(0.0f, 0.0f, 1.0f);
+const Vector3 Vector3::zero(0.0f, 0.0f, 0.0f);
+const Vector3 Vector3::one(1.0f, 1.0f, 1.0f);
+
 Vector3::~Vector3()
 {
 }

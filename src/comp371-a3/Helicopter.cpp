@@ -1,8 +1,14 @@
 #include "Helicopter.h"
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
 #include <math.h>
+#include "Utils.h"
 
-Helicopter::Helicopter()
+Helicopter::Helicopter(float a) :
+a{ a },
+distanceTravelled{ -M_PI_2 }
 {
 	position.x = 0.0f;
 	position.y = 0.0f;
@@ -28,6 +34,36 @@ Helicopter::~Helicopter()
 {
 }
 
+void Helicopter::update(float deltaTime)
+{
+	static float sqrt2 = sqrt(2.0f);
+
+	distanceTravelled += speed * deltaTime;
+
+	// Parametric equation for lemniscate of Bernoulli
+	Vector3 nextPos(
+		(a * sqrt2 * cosf(distanceTravelled)) / (pow(sinf(distanceTravelled), 2) + 1),
+		0.0f,
+		(a * sqrt2 * cosf(distanceTravelled) * sinf(distanceTravelled)) / (pow(sinf(distanceTravelled), 2) + 1)
+		);
+
+	if (nextPos != position)
+	{
+		forward = (nextPos - position).normalized();
+	}
+
+	angle = acosf(Vector3::dot(forward, Vector3::right)) * toDegs *-sign(forward.z);
+
+	position = nextPos;
+
+	pilotPos = position + forward * pilotPosAnchor.x + Vector3::up * pilotPosAnchor.y;
+
+	pilotLook =  pilotPos + forward;
+
+	spotPos = position + forward * spotPosAnchor.x;
+	spotDir = forward + -Vector3::up * sqrt2;
+}
+
 void Helicopter::drawHelicopter()
 {
 	glPushAttrib(GL_COLOR_MATERIAL_FACE);
@@ -35,28 +71,28 @@ void Helicopter::drawHelicopter()
 	static GLfloat mat_diffuse[] = { 216 / 255.f, 50 / 255.f, 52 / 255.f };
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glPushMatrix();
-		glTranslatef(position.x, position.y, position.z);
-		glRotatef(angle, 0, 1, 0);
+	glTranslatef(position.x, position.y, position.z);
+	glRotatef(angle, 0, 1, 0);
 
-		// Spot light position
-		static GLfloat spos[] = { 4.15, 0, 0, 1};
-		// Spot light direction
-		static GLfloat sdir[] = {1, 0, 0};
+	// Spot light position
+	static GLfloat spos[] = { 4.15, 0, 0, 1 };
+	// Spot light direction
+	static GLfloat sdir[] = { 1, 0, 0 };
 
-		// Lines to show where spotlight should be aiming
-		glBegin(GL_LINES);
-		glVertex3fv(spos);
-		glVertex3f(spos[0] + sdir[0], 0, 0);
-		glEnd();
+	// Lines to show where spotlight should be aiming
+	glBegin(GL_LINES);
+	glVertex3fv(spos);
+	glVertex3f(spos[0] + sdir[0], 0, 0);
+	glEnd();
 
-		glLightfv(GL_LIGHT1, GL_POSITION, spos);
-		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, sdir);
-		drawHeliBody();
-		glPushMatrix();
-			glTranslatef(-5.5, 2, 0);
-			glRotatef(-90, 0, 1, 0);
-			drawHeliTail();
-		glPopMatrix();
+	glLightfv(GL_LIGHT1, GL_POSITION, spos);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, sdir);
+	drawHeliBody();
+	glPushMatrix();
+	glTranslatef(-5.5, 2, 0);
+	glRotatef(-90, 0, 1, 0);
+	drawHeliTail();
+	glPopMatrix();
 	glPopMatrix();
 	glPopAttrib();
 }
@@ -268,17 +304,17 @@ void Helicopter::drawHeliBody()
 	drawMachinegun();
 	glPopMatrix();
 	glPushMatrix();
-		glTranslatef(-1, 3, 0);
-		glPushMatrix();
-			glRotatef(frontPropAngle, 0, 1, 0);
-			drawRotor(.6);
-		glPopMatrix();
-		glRotatef(60, 0, 1, 0);
-		glTranslatef(0, 0.15, 0);
-		glPushMatrix();
-			glRotatef(-frontPropAngle, 0, 1, 0);
-			drawRotor(.6);
-		glPopMatrix();
+	glTranslatef(-1, 3, 0);
+	glPushMatrix();
+	glRotatef(frontPropAngle, 0, 1, 0);
+	drawRotor(.6);
+	glPopMatrix();
+	glRotatef(60, 0, 1, 0);
+	glTranslatef(0, 0.15, 0);
+	glPushMatrix();
+	glRotatef(-frontPropAngle, 0, 1, 0);
+	drawRotor(.6);
+	glPopMatrix();
 	glPopMatrix();
 	glPushMatrix();
 	glTranslatef(0, -1.5, 0);
@@ -310,18 +346,18 @@ void Helicopter::drawHeliTail()
 	gluDisk(tail, 0, 0.1, 20, 20);
 	glPopMatrix();
 	glPushMatrix();
-		glTranslatef(-.1, 2.7, 9.5);
-		glRotatef(90, 0, 0, 1);
-		glPushMatrix();
-			glRotatef(backPropAngle, 0, 1, 0);
-			drawRotor(.1);
-		glPopMatrix();
-		glTranslatef(0, 0.05, 0);
-		glRotatef(60, 0, 1, 0);
-		glPushMatrix();
-			glRotatef(backPropAngle, 0, 1, 0);
-			drawRotor(.1);
-		glPopMatrix();
+	glTranslatef(-.1, 2.7, 9.5);
+	glRotatef(90, 0, 0, 1);
+	glPushMatrix();
+	glRotatef(backPropAngle, 0, 1, 0);
+	drawRotor(.1);
+	glPopMatrix();
+	glTranslatef(0, 0.05, 0);
+	glRotatef(60, 0, 1, 0);
+	glPushMatrix();
+	glRotatef(backPropAngle, 0, 1, 0);
+	drawRotor(.1);
+	glPopMatrix();
 	glPopMatrix();
 
 	gluDeleteQuadric(tail);
