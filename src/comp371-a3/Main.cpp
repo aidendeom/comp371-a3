@@ -56,6 +56,7 @@ void init(void)
 	GLfloat light_specular[] = { 1, 1, 1, 1 };
 
 	GLfloat blueLight[]{0, 0, 1, 1};
+	GLfloat redLight[]{1, 0, 0, 1};
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
@@ -68,10 +69,13 @@ void init(void)
 
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
 
+	glLightfv(GL_LIGHT3, GL_DIFFUSE, redLight);
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT3);
 
 	glShadeModel(GL_SMOOTH);
 }
@@ -237,6 +241,16 @@ void updateCamera()
 	else
 	{
 		gluLookAt(camX, camY, camZ, heli.position.x, heli.position.y, heli.position.z, 0, 1, 0);
+
+		GLfloat spotPos[4]{camX, camY, camZ, 1};
+
+		Vector3 sdir = (heli.position - Vector3{ camX, camY, camZ }).normalized();
+
+		GLfloat spotDir[3]{sdir.x, sdir.y, sdir.z};
+
+		glLightfv(GL_LIGHT3, GL_POSITION, spotPos);
+		glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDir);
+		glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 45);
 	}
 }
 
@@ -330,6 +344,22 @@ void toggleHighBeams()
 
 bool light0 = true;
 bool light1 = true;
+bool light2 = true;
+bool light3 = true;
+
+void toggleLight(int lightCode, bool& lightBool)
+{
+	if (lightBool)
+	{
+		glDisable(lightCode);
+	}
+	else
+	{
+		glEnable(lightCode);
+	}
+
+	lightBool = !lightBool;
+}
 
 // called on special key pressed
 void specialKey(int key, int x, int y)
@@ -349,26 +379,16 @@ void specialKey(int key, int x, int y)
 		horizontalAngle -= 5.0f;
 		break;
 	case GLUT_KEY_F1:
-		if (light0)
-		{
-			glDisable(GL_LIGHT0);
-		}
-		else
-		{
-			glEnable(GL_LIGHT0);
-		}
-		light0 = !light0;
+		toggleLight(GL_LIGHT0, light0);
 		break;
 	case GLUT_KEY_F2:
-		if (light1)
-		{
-			glDisable(GL_LIGHT1);
-		}
-		else
-		{
-			glEnable(GL_LIGHT1);
-		}
-		light1 = !light1;
+		toggleLight(GL_LIGHT1, light1);
+		break;
+	case GLUT_KEY_F3:
+		toggleLight(GL_LIGHT2, light2);
+		break;
+	case GLUT_KEY_F4:
+		toggleLight(GL_LIGHT3, light3);
 		break;
 	}
 
