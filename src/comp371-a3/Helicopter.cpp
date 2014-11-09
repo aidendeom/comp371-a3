@@ -18,17 +18,25 @@ accel{ 1 },
 frontPropAngle{ 0 },
 backPropAngle{ 0 },
 rotorSpeed{ 0 },
-distanceTravelled{ -M_PI_2 }
+distanceTravelled{ -M_PI_2 },
+lightAngle{ 0 },
+lightRotSpeed{ 360 },
+highBeams{ false }
 {
 	sf::Image image;
 	image.loadFromFile("resources/camo.jpg");
 	glGenTextures(1, &heliBodyTexture);
 	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, image.getSize().x, image.getSize().y, GL_RGBA, GL_UNSIGNED_BYTE, image.getPixelsPtr());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	spotDirection[0] = 1;
+	spotDirection[1] = -sqrt(2);
+	spotDirection[2] = 0;
 }
 
 
@@ -43,7 +51,7 @@ void Helicopter::update(float deltaTime)
 	distanceTravelled += speed * deltaTime;
 
 	// Parametric equation for lemniscate of Bernoulli
-	Vector3 nextPos(
+	Vector3 nextPos( \
 		(a * sqrt2 * cosf(distanceTravelled)) / (pow(sinf(distanceTravelled), 2) + 1),
 		0.0f,
 		(a * sqrt2 * cosf(distanceTravelled) * sinf(distanceTravelled)) / (pow(sinf(distanceTravelled), 2) + 1)
@@ -61,6 +69,8 @@ void Helicopter::update(float deltaTime)
 	pilotPos = position + forward * pilotPosAnchor.x + Vector3::up * pilotPosAnchor.y;
 
 	pilotLook = pilotPos + forward;
+
+	lightAngle += lightRotSpeed * deltaTime;
 }
 
 void Helicopter::drawHelicopter()
@@ -70,30 +80,48 @@ void Helicopter::drawHelicopter()
 	//static GLfloat mat_diffuse[] = { 216 / 255.f, 50 / 255.f, 52 / 255.f };
 	//glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glPushMatrix();
-	glTranslatef(position.x, position.y, position.z);
-	glRotatef(angle, 0, 1, 0);
+	{
+		glTranslatef(position.x, position.y, position.z);
+		glRotatef(angle, 0, 1, 0);
 
-	// Spot light position
-	static GLfloat spos[] = { 4.15, 0, 0, 1 };
-	// Spot light direction
-	static GLfloat sdir[] = { 1, -sqrt(2.0f), 0 };
+		// Spot light position
+		static GLfloat spos[] = { 4.15, 0, 0, 1 };
 
-	// Lines to show where spotlight should be aiming
-	glBegin(GL_LINES);
-	glVertex4fv(spos);
-	glVertex3f(spos[0] + sdir[0], 0, spos[2] + sdir[2]);
-	glEnd();
+		glLightfv(GL_LIGHT1, GL_POSITION, spos);
+		glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDirection);
 
-	glLightfv(GL_LIGHT1, GL_POSITION, spos);
-	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, sdir);
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45);
+		// Position of the blue light
+		static const GLfloat v[]{2, 4, 0, 1};
+		static const GLfloat vdir[]{0, -1, 0};
+
+		glPushMatrix();
+		{
+			glRotatef(lightAngle, 0, 1, 0);
+
+			//glLineWidth(5);
+			//glBegin(GL_LINES);
+			//{
+			//	glVertex3f(0, 0, 0);
+			//	glVertex3fv(v);
+			//}
+			//glEnd();
+			//glLineWidth(1);
+
+			glLightfv(GL_LIGHT2, GL_POSITION, v);
+			glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, vdir);
+			glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 45);
+		}
+		glPopMatrix();
+	}
 
 	drawHeliBody();
 	glPushMatrix();
-	glTranslatef(-5.5, 2, 0);
-	glRotatef(-90, 0, 1, 0);
-	drawHeliTail();
-	glPopMatrix();
+	{
+		glTranslatef(-5.5, 2, 0);
+		glRotatef(-90, 0, 1, 0);
+		drawHeliTail();
+		glPopMatrix();
+	}
 	glPopMatrix();
 	//glPopAttrib();
 }
@@ -353,7 +381,10 @@ void Helicopter::drawHeliTail()
 	glPushMatrix();
 	glutSolidCone(1, 2, 20, 20);
 	glScalef(1, 2, 1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
 	gluCylinder(tail, 0.5, 0.25, 10, 20, 20);
+	glDisable(GL_TEXTURE_2D);
 	glTranslatef(0, 0, 10);
 	gluDisk(tail, 0, 0.25f, 20, 20);
 	glPopMatrix();

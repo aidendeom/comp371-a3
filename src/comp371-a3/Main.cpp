@@ -50,10 +50,12 @@ void init(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
 
-	GLfloat light_position[] = { 0, 1.0, 0, 0.0 };
+	GLfloat light_position[] = { 1, 1.0, 0, 0.0 };
 	GLfloat light_ambient[] = { 0, 0, 0, 1 };
 	GLfloat light_diffuse[] = { 1, 1, 1, 1 };
 	GLfloat light_specular[] = { 1, 1, 1, 1 };
+
+	GLfloat blueLight[]{0, 0, 1, 1};
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
@@ -64,10 +66,12 @@ void init(void)
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
 
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 90);
+	glEnable(GL_LIGHT2);
 
 	glShadeModel(GL_SMOOTH);
 }
@@ -144,7 +148,7 @@ void display()
 		if (i == 0)
 		{
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glAccum(GL_LOAD, 1.0 / n);
+			//glAccum(GL_LOAD, 1.0 / n);
 		}
 		else
 		{
@@ -291,6 +295,39 @@ void toggleMotionBlur()
 	printf_s("Motion blur %s\n", motionBlur ? "enabled" : "disabled");
 }
 
+void toggleHighBeams()
+{
+	static const GLfloat highBeams[]{1, 0, 0};
+	static const GLfloat lowBeams[]{ 1, -sqrt(2.0f), 0 };
+
+	static const GLfloat highIntensity[]{5, 5, 5, 1};
+	static const GLfloat lowIntensity[]{1, 1, 1, 1};
+
+	const GLfloat *currentIntensity = nullptr;
+
+	float cutoff = 0.0f;
+
+	heli.highBeams = !heli.highBeams;
+
+	if (heli.highBeams)
+	{
+		std::copy(std::begin(highBeams), std::end(highBeams), heli.spotDirection);
+		currentIntensity = highIntensity;
+		cutoff = 15;
+		printf_s("Highbeams\n");
+	}
+	else
+	{
+		std::copy(std::begin(lowBeams), std::end(lowBeams), heli.spotDirection);
+		currentIntensity = lowIntensity;
+		cutoff = 45;
+		printf_s("Lowbeams\n");
+	}
+
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, currentIntensity);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, cutoff);
+}
+
 bool light0 = true;
 bool light1 = true;
 
@@ -352,7 +389,7 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'w':
 		drawMode = drawMode == GL_FILL ? GL_LINE : GL_FILL;
-		glPolygonMode(GL_FRONT, drawMode);
+		glPolygonMode(GL_FRONT_AND_BACK, drawMode);
 		printf_s("Wireframe: %s\n", drawMode == GL_FILL ? "FALSE" : "TRUE");
 		break;
 	case 'z':
@@ -400,6 +437,9 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case'm':
 		toggleMotionBlur();
+		break;
+	case 'h':
+		toggleHighBeams();
 		break;
 	case 27: // Escape key
 		printf_s("Goodbye!\n");

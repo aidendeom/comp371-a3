@@ -25,6 +25,10 @@ public:
 	float speed;
 	float topSpeed;
 
+	bool highBeams;
+
+	GLfloat spotDirection[3];
+
 	void update(float deltaTime);
 	void drawHelicopter();
 
@@ -32,6 +36,8 @@ private:
 	float a;
 	float distanceTravelled;
 	GLuint heliBodyTexture;
+	float lightAngle;
+	float lightRotSpeed;
 
 	void drawHeliBody();
 	void drawHeliTail();
