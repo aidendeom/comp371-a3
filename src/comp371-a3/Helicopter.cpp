@@ -4,29 +4,31 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
+#include <SFML/Graphics/Image.hpp>
 #include "Utils.h"
 
 Helicopter::Helicopter(float a) :
 a{ a },
+position{ Vector3::zero },
+forward{ Vector3::right },
+angle{ 0 },
+speed{ 0 },
+topSpeed{ 1 },
+accel{ 1 },
+frontPropAngle{ 0 },
+backPropAngle{ 0 },
+rotorSpeed{ 0 },
 distanceTravelled{ -M_PI_2 }
 {
-	position.x = 0.0f;
-	position.y = 0.0f;
-	position.z = 0.0f;
-
-	forward.x = 1.0f;
-	forward.y = 0.0f;
-	forward.z = 0.0f;
-
-	angle = 0.0f;
-
-	speed = 0.0f;
-	topSpeed = 0.5f;
-	accel = 1.0f;
-
-	frontPropAngle = 0.0f;
-	backPropAngle = 0.0f;
-	rotorSpeed = 0.0f;
+	sf::Image image;
+	image.loadFromFile("resources/camo.jpg");
+	glGenTextures(1, &heliBodyTexture);
+	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, image.getSize().x, image.getSize().y, GL_RGBA, GL_UNSIGNED_BYTE, image.getPixelsPtr());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 
@@ -58,18 +60,15 @@ void Helicopter::update(float deltaTime)
 
 	pilotPos = position + forward * pilotPosAnchor.x + Vector3::up * pilotPosAnchor.y;
 
-	pilotLook =  pilotPos + forward;
-
-	spotPos = position + forward * spotPosAnchor.x;
-	spotDir = forward + -Vector3::up * sqrt2;
+	pilotLook = pilotPos + forward;
 }
 
 void Helicopter::drawHelicopter()
 {
-	glPushAttrib(GL_COLOR_MATERIAL_FACE);
-	//glColor3f(216/255.f, 50/255.f, 52/255.f);
-	static GLfloat mat_diffuse[] = { 216 / 255.f, 50 / 255.f, 52 / 255.f };
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	//glPushAttrib(GL_COLOR_MATERIAL_FACE);
+	////glColor3f(216/255.f, 50/255.f, 52/255.f);
+	//static GLfloat mat_diffuse[] = { 216 / 255.f, 50 / 255.f, 52 / 255.f };
+	//glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glPushMatrix();
 	glTranslatef(position.x, position.y, position.z);
 	glRotatef(angle, 0, 1, 0);
@@ -77,16 +76,18 @@ void Helicopter::drawHelicopter()
 	// Spot light position
 	static GLfloat spos[] = { 4.15, 0, 0, 1 };
 	// Spot light direction
-	static GLfloat sdir[] = { 1, 0, 0 };
+	static GLfloat sdir[] = { 1, -sqrt(2.0f), 0 };
 
 	// Lines to show where spotlight should be aiming
 	glBegin(GL_LINES);
-	glVertex3fv(spos);
-	glVertex3f(spos[0] + sdir[0], 0, 0);
+	glVertex4fv(spos);
+	glVertex3f(spos[0] + sdir[0], 0, spos[2] + sdir[2]);
 	glEnd();
 
 	glLightfv(GL_LIGHT1, GL_POSITION, spos);
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, sdir);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45);
+
 	drawHeliBody();
 	glPushMatrix();
 	glTranslatef(-5.5, 2, 0);
@@ -94,7 +95,7 @@ void Helicopter::drawHelicopter()
 	drawHeliTail();
 	glPopMatrix();
 	glPopMatrix();
-	glPopAttrib();
+	//glPopAttrib();
 }
 
 void Helicopter::drawMissileLauncher()
@@ -272,7 +273,26 @@ void Helicopter::drawHeliBody()
 	glPushMatrix();
 	glPopMatrix();
 	glScalef(8, 2, 2);
+
+	glEnable(GL_TEXTURE_2D);
+
+	GLfloat zPlane[] = { 0.0f, 0.0f, 1, 1 };
+
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGenfv(GL_S, GL_OBJECT_PLANE, zPlane);
+	glTexGenfv(GL_T, GL_OBJECT_PLANE, zPlane);
+
+	glEnable(GL_TEXTURE_GEN_S);
+	glEnable(GL_TEXTURE_GEN_T);
+
+	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
 	glutSolidCube(1.0);
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+
+	glDisable(GL_TEXTURE_2D);
+
 	glPopMatrix();
 	glPushMatrix();
 	glTranslatef(-2, 2, 0);
@@ -284,7 +304,7 @@ void Helicopter::drawHeliBody()
 	glRotatef(-45, 0, 0, 1);
 	glScalef(2 * sqrt(2.0f), 2, 1.8);
 	glPushAttrib(GL_COLOR_MATERIAL_FACE);
-	//glColor3f(1, 1, 1);
+	glColor3f(1, 1, 1);
 	static GLfloat mat_diffuse[] = { 1, 1, 1 };
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glutWireCube(1);
@@ -312,7 +332,7 @@ void Helicopter::drawHeliBody()
 	glRotatef(60, 0, 1, 0);
 	glTranslatef(0, 0.15, 0);
 	glPushMatrix();
-	glRotatef(-frontPropAngle, 0, 1, 0);
+	glRotatef(frontPropAngle, 0, 1, 0);
 	drawRotor(.6);
 	glPopMatrix();
 	glPopMatrix();

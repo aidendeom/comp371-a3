@@ -35,6 +35,7 @@ int wID = -1;
 bool perspectiveCam = true;
 bool on = false; // bool for moving the heli and rotors
 bool firstPerson = false;
+bool motionBlur = false;
 
 Helicopter heli(50.0f);
 
@@ -51,8 +52,8 @@ void init(void)
 
 	GLfloat light_position[] = { 0, 1.0, 0, 0.0 };
 	GLfloat light_ambient[] = { 0, 0, 0, 1 };
-	GLfloat light_diffuse[] = { .5, .25, .25, 1 };
-	GLfloat light_specular[] = { .25, .5, .25, 1 };
+	GLfloat light_diffuse[] = { 1, 1, 1, 1 };
+	GLfloat light_specular[] = { 1, 1, 1, 1 };
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
@@ -134,8 +135,29 @@ void idle(void)
 
 void display()
 {
-	glClear(GL_COLOR_BUFFER_BIT);				// Clear the Color Buffer 
-	glClear(GL_DEPTH_BUFFER_BIT);
+
+	static const int n = 10;
+	static int i = 0;
+
+	if (motionBlur)
+	{
+		if (i == 0)
+		{
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glAccum(GL_LOAD, 1.0 / n);
+		}
+		else
+		{
+			glAccum(GL_ACCUM, 1.0 / n);
+		}
+
+		i++;
+	}
+	else
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
 
 	glPushMatrix();
 	heli.drawHelicopter();
@@ -143,23 +165,23 @@ void display()
 
 	//Draw floor
 	glPushMatrix();
-	glPushAttrib(GL_COLOR_MATERIAL_FACE);
-	GLfloat mat_dif[] = { 0, .3, 0 };
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_dif);
+	//glPushAttrib(GL_COLOR_MATERIAL_FACE);
+	//GLfloat mat_dif[] = { 0, .3, 0 };
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, mat_dif);
 	glTranslatef(0, -10, 0);
 	glutSolidTeapot(10);
 	glPopAttrib();
 	glPopMatrix();
-
-	//std::string fpsStr = std::to_string(fps);
-
-	//std::cout << fps << std::endl;
-
-	//printf_s("%s\n", fpsStr.c_str());
-
-	//renderBitmapString(50, 50, (void*)font, fpsStr.c_str());
-
-	glutSwapBuffers();
+	if (motionBlur && i >= n)
+	{
+		i = 0;
+		glAccum(GL_RETURN, 1.0);
+		glutSwapBuffers();
+	}
+	else if (!motionBlur)
+	{
+		glutSwapBuffers();
+	}
 }
 
 void setPerspectiveCam();
@@ -263,6 +285,12 @@ void setOrthoCam()
 	perspectiveCam = false;
 }
 
+void toggleMotionBlur()
+{
+	motionBlur = !motionBlur;
+	printf_s("Motion blur %s\n", motionBlur ? "enabled" : "disabled");
+}
+
 bool light0 = true;
 bool light1 = true;
 
@@ -324,7 +352,7 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'w':
 		drawMode = drawMode == GL_FILL ? GL_LINE : GL_FILL;
-		glPolygonMode(GL_FRONT_AND_BACK, drawMode);
+		glPolygonMode(GL_FRONT, drawMode);
 		printf_s("Wireframe: %s\n", drawMode == GL_FILL ? "FALSE" : "TRUE");
 		break;
 	case 'z':
@@ -370,6 +398,9 @@ void keyboard(unsigned char key, int x, int y)
 		firstPerson = false;
 		printf_s("Third-Person Camera\n");
 		break;
+	case'm':
+		toggleMotionBlur();
+		break;
 	case 27: // Escape key
 		printf_s("Goodbye!\n");
 		glutDestroyWindow(wID);
@@ -403,6 +434,17 @@ void mouseButtonPressed(int button, int state, int x, int y)
 	{
 		lastX = x;
 		lastY = y;
+	}
+	
+	if (button == 3)
+	{
+		dist--;
+		printf_s("Forwards\n");
+	}
+	else if (button == 4)
+	{
+		dist++;
+		printf_s("Backwards\n");
 	}
 }
 

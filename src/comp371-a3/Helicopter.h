@@ -19,9 +19,6 @@ public:
 	Vector3 pilotLook;
 	Vector3	forward;
 	const Vector3 pilotPosAnchor{ 2.25f, 2.0f, 0.0f };
-	const Vector3 spotPosAnchor{ 4.15f, 0.0f, 0.0f };
-	Vector3 spotPos;
-	Vector3 spotDir;
 
 	float angle;
 
@@ -34,6 +31,7 @@ public:
 private:
 	float a;
 	float distanceTravelled;
+	GLuint heliBodyTexture;
 
 	void drawHeliBody();
 	void drawHeliTail();
