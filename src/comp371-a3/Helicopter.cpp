@@ -77,8 +77,10 @@ void Helicopter::drawHelicopter()
 {
 	//glPushAttrib(GL_COLOR_MATERIAL_FACE);
 	////glColor3f(216/255.f, 50/255.f, 52/255.f);
-	//static GLfloat mat_diffuse[] = { 216 / 255.f, 50 / 255.f, 52 / 255.f };
+	//static GLfloat mat_diffuse[] = { .1, .1, .1 };
+	//static GLfloat mat_specular[]{211/255.f, 211/255.f, 211/255.f};
 	//glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glPushMatrix();
 	{
 		glTranslatef(position.x, position.y, position.z);

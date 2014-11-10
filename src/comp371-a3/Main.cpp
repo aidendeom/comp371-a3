@@ -66,6 +66,7 @@ void init(void)
 	glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45);
 
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
 
@@ -342,10 +343,25 @@ void toggleHighBeams()
 	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, cutoff);
 }
 
+bool lighting = true;
 bool light0 = true;
 bool light1 = true;
 bool light2 = true;
 bool light3 = true;
+
+void toggleLighting()
+{
+	if (lighting)
+	{
+		glDisable(GL_LIGHTING);
+	}
+	else
+	{
+		glEnable(GL_LIGHTING);
+	}
+
+	lighting = !lighting;
+}
 
 void toggleLight(int lightCode, bool& lightBool)
 {
@@ -461,6 +477,9 @@ void keyboard(unsigned char key, int x, int y)
 	case 'h':
 		toggleHighBeams();
 		break;
+	case 'l':
+		toggleLighting();
+		break;
 	case 27: // Escape key
 		printf_s("Goodbye!\n");
 		glutDestroyWindow(wID);
@@ -495,7 +514,7 @@ void mouseButtonPressed(int button, int state, int x, int y)
 		lastX = x;
 		lastY = y;
 	}
-	
+
 	if (button == 3)
 	{
 		dist--;
