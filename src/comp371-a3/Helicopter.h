@@ -3,6 +3,13 @@
 #include <GL/freeglut.h>
 #include "Vector3.h"
 
+enum MaterialType
+{
+	Shiny = 0,
+	Rusty,
+	EndMaterialType
+};
+
 class Helicopter
 {
 public:
@@ -31,8 +38,11 @@ public:
 
 	GLfloat spotDirection[3];
 
+	MaterialType currentMaterial;
+
 	void update(float deltaTime);
 	void drawHelicopter();
+	void nextMaterial();
 
 private:
 	float a;
@@ -42,6 +52,8 @@ private:
 	GLuint heliWingTexture;
 	float lightAngle;
 	float lightRotSpeed;
+	GLfloat mat_diffuse[4];
+	GLfloat mat_specular[4];
 
 	void drawHeliBody();
 	void drawHeliTail();

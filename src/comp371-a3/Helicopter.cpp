@@ -21,17 +21,19 @@ rotorSpeed{ 0 },
 distanceTravelled{ -M_PI_2 },
 lightAngle{ 0 },
 lightRotSpeed{ 360 },
-highBeams{ false }
+highBeams{ false },
+currentMaterial{ MaterialType::Shiny }
 {
 	spotDirection[0] = 1;
 	spotDirection[1] = -sqrt(2);
 	spotDirection[2] = 0;
+
+	nextMaterial();
 }
 
 
 Helicopter::~Helicopter()
 {
-	//glDeleteTextures(1, &heliBodyTexture);
 }
 
 void Helicopter::loadTextures()
@@ -122,14 +124,37 @@ void Helicopter::update(float deltaTime)
 	lightAngle += lightRotSpeed * deltaTime;
 }
 
+void Helicopter::nextMaterial()
+{
+	static const GLfloat rustyDiffuse[]{0.45f, 0.09f, 0.0f, 1.0f};
+	static const GLfloat rustySpecular[]{0.06f, 0.0f, 0.0f, 1.0f};
+
+	static const GLfloat shinyDiffuse[]{0.3f, 0.3f, 0.3f, 1.0f};
+	static const GLfloat shinySpecular[]{1.0f, 1.0f, 1.0f, 1.0f};
+
+	currentMaterial = static_cast<MaterialType>(currentMaterial + 1);
+
+	if (currentMaterial == MaterialType::EndMaterialType)
+		currentMaterial = MaterialType::Shiny;
+
+	switch (currentMaterial)
+	{
+	case Shiny:
+		std::copy(std::begin(shinyDiffuse), std::end(shinyDiffuse), mat_diffuse);
+		std::copy(std::begin(shinySpecular), std::end(shinySpecular), mat_specular);
+		break;
+	case Rusty:
+		std::copy(std::begin(rustyDiffuse), std::end(rustyDiffuse), mat_diffuse);
+		std::copy(std::begin(rustySpecular), std::end(rustySpecular), mat_specular);
+		break;
+	}
+}
+
 void Helicopter::drawHelicopter()
 {
-	//glPushAttrib(GL_COLOR_MATERIAL_FACE);
-	////glColor3f(216/255.f, 50/255.f, 52/255.f);
-	//static GLfloat mat_diffuse[] = { .1, .1, .1 };
-	//static GLfloat mat_specular[]{211/255.f, 211/255.f, 211/255.f};
-	//glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	//glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, 128);
 	glPushMatrix();
 	{
 		glTranslatef(position.x, position.y, position.z);
@@ -165,7 +190,8 @@ void Helicopter::drawHelicopter()
 		glPopMatrix();
 	}
 	glPopMatrix();
-	//glPopAttrib();
+
+
 }
 
 void Helicopter::drawMissileLauncher()

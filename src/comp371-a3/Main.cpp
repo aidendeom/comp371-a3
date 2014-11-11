@@ -177,13 +177,17 @@ void display()
 	//glPushAttrib(GL_COLOR_MATERIAL_FACE);
 	//GLfloat mat_dif[] = { 0, .3, 0 };
 	//glMaterialfv(GL_FRONT, GL_SPECULAR, mat_dif);
+	const static GLfloat mat_default[]{1, 1, 1, 1};
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_default);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_default);
 	glTranslatef(0, -10, 0);
 	glutSolidTeapot(10);
-	glPopAttrib();
+	//glPopAttrib();
 	glPopMatrix();
 	if (motionBlur && i >= n)
 	{
 		i = 0;
+		glAccum(GL_ACCUM, 1);
 		glAccum(GL_RETURN, 1.0);
 		glutSwapBuffers();
 	}
@@ -461,7 +465,7 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'A':
 		heli.topSpeed -= 0.1f;
-		if (heli.topSpeed < 0.0f) heli.topSpeed = 0.0f;
+		if (heli.topSpeed < 0.1f) heli.topSpeed = 0.1f;
 		break;
 	case '1':
 		firstPerson = true;
@@ -479,6 +483,9 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'l':
 		toggleLighting();
+		break;
+	case 'n':
+		heli.nextMaterial();
 		break;
 	case 27: // Escape key
 		printf_s("Goodbye!\n");
