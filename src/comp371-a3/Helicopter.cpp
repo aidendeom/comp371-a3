@@ -23,17 +23,6 @@ lightAngle{ 0 },
 lightRotSpeed{ 360 },
 highBeams{ false }
 {
-	sf::Image image;
-	image.loadFromFile("resources/camo.jpg");
-	glGenTextures(1, &heliBodyTexture);
-	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, image.getSize().x, image.getSize().y, GL_RGBA, GL_UNSIGNED_BYTE, image.getPixelsPtr());
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
 	spotDirection[0] = 1;
 	spotDirection[1] = -sqrt(2);
 	spotDirection[2] = 0;
@@ -42,6 +31,66 @@ highBeams{ false }
 
 Helicopter::~Helicopter()
 {
+	//glDeleteTextures(1, &heliBodyTexture);
+}
+
+void Helicopter::loadTextures()
+{
+	// Load image from disk
+	sf::Image image;
+	image.loadFromFile("resources/camo.jpg");
+
+	// Generate unique ID
+	glGenTextures(1, &heliBodyTexture);
+
+	// Binding to the id??
+	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
+
+	// RAM -> VRAM
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, image.getPixelsPtr());
+
+	// Set some parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	image.loadFromFile("resources/metal_aircraft.jpg");
+
+	// Generate unique ID
+	glGenTextures(1, &heliTailTexture);
+
+	// Binding to the id??
+	glBindTexture(GL_TEXTURE_2D, heliTailTexture);
+
+	// RAM -> VRAM
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, image.getPixelsPtr());
+
+	// Set some parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	image.loadFromFile("resources/metal_aircraft2.jpg");
+
+	// Generate unique ID
+	glGenTextures(1, &heliWingTexture);
+
+	// Binding to the id??
+	glBindTexture(GL_TEXTURE_2D, heliWingTexture);
+
+	// RAM -> VRAM
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, image.getPixelsPtr());
+
+	// Set some parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 void Helicopter::update(float deltaTime)
@@ -99,16 +148,6 @@ void Helicopter::drawHelicopter()
 		glPushMatrix();
 		{
 			glRotatef(lightAngle, 0, 1, 0);
-
-			//glLineWidth(5);
-			//glBegin(GL_LINES);
-			//{
-			//	glVertex3f(0, 0, 0);
-			//	glVertex3fv(v);
-			//}
-			//glEnd();
-			//glLineWidth(1);
-
 			glLightfv(GL_LIGHT2, GL_POSITION, v);
 			glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, vdir);
 			glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 45);
@@ -117,6 +156,7 @@ void Helicopter::drawHelicopter()
 	}
 
 	drawHeliBody();
+
 	glPushMatrix();
 	{
 		glTranslatef(-5.5, 2, 0);
@@ -201,12 +241,19 @@ void Helicopter::drawWing()
 {
 	GLUquadric *wing = gluNewQuadric();
 
+	gluQuadricTexture(wing, GL_TRUE);
+
 	glPushMatrix();
 	glScalef(2, 1, 1);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, heliWingTexture);
+
 	gluCylinder(wing, 2, 1, 10, 20, 20);
 	glPushMatrix();
 	glTranslatef(0, 0, 10);
 	gluDisk(wing, 0, 1, 20, 20);
+	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 	glPopMatrix();
 	glPushMatrix();
@@ -306,28 +353,15 @@ void Helicopter::drawHeliBody()
 
 	glEnable(GL_TEXTURE_2D);
 
-	GLfloat zPlane[] = { 0.0f, 0.0f, 1, 1 };
-
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-	glTexGenfv(GL_S, GL_OBJECT_PLANE, zPlane);
-	glTexGenfv(GL_T, GL_OBJECT_PLANE, zPlane);
-
-	glEnable(GL_TEXTURE_GEN_S);
-	glEnable(GL_TEXTURE_GEN_T);
-
 	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
-	glutSolidCube(1.0);
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-
-	glDisable(GL_TEXTURE_2D);
+	drawSolidCube(1);	
 
 	glPopMatrix();
 	glPushMatrix();
 	glTranslatef(-2, 2, 0);
 	glScalef(8, 2, 2);
-	glutSolidCube(1);
+	drawSolidCube(1);
+	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 	glPushMatrix();
 	glTranslatef(2.3, 1.3, 0);
@@ -380,37 +414,51 @@ void Helicopter::drawHeliTail()
 {
 	GLUquadric *tail = gluNewQuadric();
 
+	gluQuadricTexture(tail, GL_TRUE);
+
 	glPushMatrix();
-	glutSolidCone(1, 2, 20, 20);
-	glScalef(1, 2, 1);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
-	gluCylinder(tail, 0.5, 0.25, 10, 20, 20);
-	glDisable(GL_TEXTURE_2D);
-	glTranslatef(0, 0, 10);
-	gluDisk(tail, 0, 0.25f, 20, 20);
+	{
+		glutSolidCone(1, 2, 20, 20);
+		glScalef(1, 2, 1);
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, heliTailTexture);
+		gluCylinder(tail, 0.5, 0.25, 10, 20, 20);
+		glDisable(GL_TEXTURE_2D);
+
+		glTranslatef(0, 0, 10);
+		gluDisk(tail, 0, 0.25f, 20, 20);
+	}
 	glPopMatrix();
 	glPushMatrix();
-	glTranslatef(0, 0, 9.25);
-	glRotatef(-85, 1, 0, 0);
-	glScalef(1, 3, 1);
-	gluCylinder(tail, 0.25, 0.1, 3, 20, 20);
-	glTranslatef(0, 0, 3);
-	gluDisk(tail, 0, 0.1, 20, 20);
+	{
+		glTranslatef(0, 0, 9.25);
+		glRotatef(-85, 1, 0, 0);
+		glScalef(1, 3, 1);
+		gluCylinder(tail, 0.25, 0.1, 3, 20, 20);
+		glTranslatef(0, 0, 3);
+		gluDisk(tail, 0, 0.1, 20, 20);
+	}
 	glPopMatrix();
 	glPushMatrix();
-	glTranslatef(-.1, 2.7, 9.5);
-	glRotatef(90, 0, 0, 1);
-	glPushMatrix();
-	glRotatef(backPropAngle, 0, 1, 0);
-	drawRotor(.1);
-	glPopMatrix();
-	glTranslatef(0, 0.05, 0);
-	glRotatef(60, 0, 1, 0);
-	glPushMatrix();
-	glRotatef(backPropAngle, 0, 1, 0);
-	drawRotor(.1);
-	glPopMatrix();
+	{
+		glTranslatef(-.1, 2.7, 9.5);
+		glRotatef(90, 0, 0, 1);
+		glPushMatrix();
+		{
+			glRotatef(backPropAngle, 0, 1, 0);
+			drawRotor(.1);
+		}
+		glPopMatrix();
+		glTranslatef(0, 0.05, 0);
+		glRotatef(60, 0, 1, 0);
+		glPushMatrix();
+		{
+			glRotatef(backPropAngle, 0, 1, 0);
+			drawRotor(.1);
+		}
+		glPopMatrix();
+	}
 	glPopMatrix();
 
 	gluDeleteQuadric(tail);

@@ -12,6 +12,8 @@ bool IsNearlyEqual(float a, float b);
 float clamp(float val, float lower, float upper);
 void vec2arr(Vector3 vec, GLfloat arr[]);
 
+void drawSolidCube(GLdouble dsize);
+
 template<typename T>
 int sign(T val)
 {

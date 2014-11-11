@@ -9,6 +9,8 @@ public:
 	Helicopter(float a);
 	~Helicopter();
 
+	void loadTextures();
+
 	float frontPropAngle;
 	float backPropAngle;
 	float rotorSpeed;
@@ -36,6 +38,8 @@ private:
 	float a;
 	float distanceTravelled;
 	GLuint heliBodyTexture;
+	GLuint heliTailTexture;
+	GLuint heliWingTexture;
 	float lightAngle;
 	float lightRotSpeed;
 

@@ -8,6 +8,58 @@
 #include <GL/GL.h>
 #include "Vector3.h"
 
+void  drawSolidCube(GLdouble dSize)
+{
+	double size = dSize * 0.5;
+
+#   define V(a,b,c) glVertex3d( a size, b size, c size )
+#	define T(a,b) glTexCoord2d(a, b)
+#   define N(a,b,c) glNormal3d( a, b, c )
+
+	/* PWO: Again, I dared to convert the code to use macros... */
+	glBegin(GL_QUADS);
+	N(1.0, 0.0, 0.0);
+		T(0.0, 0.0); V(+, -, +);
+		T(1.0, 0.0); V(+, -, -);
+		T(1.0, 1.0); V(+, +, -);
+		T(0.0, 1.0); V(+, +, +);
+
+	N(0.0, 1.0, 0.0);
+		T(0.0, 0.0); V(+, +, +);
+		T(1.0, 0.0); V(+, +, -);
+		T(1.0, 1.0); V(-, +, -);
+		T(0.0, 1.0); V(-, +, +);
+
+	N(0.0, 0.0, 1.0); 
+		T(0.0, 0.0); V(+, +, +);
+		T(1.0, 0.0); V(-, +, +);
+		T(1.0, 1.0); V(-, -, +);
+		T(0.0, 1.0); V(+, -, +);
+
+	N(-1.0, 0.0, 0.0);
+		T(0.0, 0.0); V(-, -, +);
+		T(1.0, 0.0); V(-, +, +);
+		T(1.0, 1.0); V(-, +, -);
+		T(0.0, 1.0); V(-, -, -);
+
+	N(0.0, -1.0, 0.0);
+		T(0.0, 0.0); V(-, -, +);
+		T(1.0, 0.0); V(-, -, -);
+		T(1.0, 1.0); V(+, -, -);
+		T(0.0, 1.0); V(+, -, +);
+
+	N(0.0, 0.0, -1.0);
+		T(0.0, 0.0); V(-, -, -);
+		T(1.0, 0.0); V(-, +, -);
+		T(1.0, 1.0); V(+, +, -);
+		T(0.0, 1.0); V(+, -, -);
+
+	glEnd();
+
+#   undef V
+#	undef T
+#   undef N
+}
 void vec2arr(Vector3 vec, GLfloat arr[])
 {
 	arr[0] = vec.x;

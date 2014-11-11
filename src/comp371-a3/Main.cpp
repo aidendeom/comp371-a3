@@ -251,7 +251,7 @@ void updateCamera()
 
 		glLightfv(GL_LIGHT3, GL_POSITION, spotPos);
 		glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDir);
-		glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 45);
+		glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 15);
 	}
 }
 
@@ -542,6 +542,9 @@ int main(int argc, char** argv)
 	glutKeyboardFunc(keyboard);
 	glutMotionFunc(mouseLook);
 	glutMouseFunc(mouseButtonPressed);
+
+	heli.loadTextures();
+
 	glutMainLoop();
 	return 0;
 }
