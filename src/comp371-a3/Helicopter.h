@@ -16,8 +16,6 @@ public:
 	Helicopter(float a);
 	~Helicopter();
 
-	void loadTextures();
-
 	float frontPropAngle;
 	float backPropAngle;
 	float rotorSpeed;
@@ -40,6 +38,10 @@ public:
 
 	MaterialType currentMaterial;
 
+	GLuint bodyTexture;
+	GLuint tailTexture;
+	GLuint wingTexture;
+
 	void update(float deltaTime);
 	void drawHelicopter();
 	void nextMaterial();
@@ -47,9 +49,6 @@ public:
 private:
 	float a;
 	float distanceTravelled;
-	GLuint heliBodyTexture;
-	GLuint heliTailTexture;
-	GLuint heliWingTexture;
 	float lightAngle;
 	float lightRotSpeed;
 	GLfloat mat_diffuse[4];

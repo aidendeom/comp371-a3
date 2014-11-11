@@ -4,7 +4,7 @@
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
-#include <SFML/Graphics/Image.hpp>
+#include <algorithm>
 #include "Utils.h"
 
 Helicopter::Helicopter(float a) :
@@ -34,65 +34,6 @@ currentMaterial{ MaterialType::Shiny }
 
 Helicopter::~Helicopter()
 {
-}
-
-void Helicopter::loadTextures()
-{
-	// Load image from disk
-	sf::Image image;
-	image.loadFromFile("resources/camo.jpg");
-
-	// Generate unique ID
-	glGenTextures(1, &heliBodyTexture);
-
-	// Binding to the id??
-	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
-
-	// RAM -> VRAM
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
-		GL_UNSIGNED_BYTE, image.getPixelsPtr());
-
-	// Set some parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	image.loadFromFile("resources/metal_aircraft.jpg");
-
-	// Generate unique ID
-	glGenTextures(1, &heliTailTexture);
-
-	// Binding to the id??
-	glBindTexture(GL_TEXTURE_2D, heliTailTexture);
-
-	// RAM -> VRAM
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
-		GL_UNSIGNED_BYTE, image.getPixelsPtr());
-
-	// Set some parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	image.loadFromFile("resources/metal_aircraft2.jpg");
-
-	// Generate unique ID
-	glGenTextures(1, &heliWingTexture);
-
-	// Binding to the id??
-	glBindTexture(GL_TEXTURE_2D, heliWingTexture);
-
-	// RAM -> VRAM
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
-		GL_UNSIGNED_BYTE, image.getPixelsPtr());
-
-	// Set some parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 void Helicopter::update(float deltaTime)
@@ -273,7 +214,7 @@ void Helicopter::drawWing()
 	glScalef(2, 1, 1);
 
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, heliWingTexture);
+	glBindTexture(GL_TEXTURE_2D, wingTexture);
 
 	gluCylinder(wing, 2, 1, 10, 20, 20);
 	glPushMatrix();
@@ -379,7 +320,7 @@ void Helicopter::drawHeliBody()
 
 	glEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, heliBodyTexture);
+	glBindTexture(GL_TEXTURE_2D, bodyTexture);
 	drawSolidCube(1);	
 
 	glPopMatrix();
@@ -448,7 +389,7 @@ void Helicopter::drawHeliTail()
 		glScalef(1, 2, 1);
 
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, heliTailTexture);
+		glBindTexture(GL_TEXTURE_2D, tailTexture);
 		gluCylinder(tail, 0.5, 0.25, 10, 20, 20);
 		glDisable(GL_TEXTURE_2D);
 

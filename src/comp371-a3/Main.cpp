@@ -8,6 +8,7 @@
 #include <chrono>
 #include <string>
 #include <GL/freeglut.h>
+#include <SFML/Graphics/Image.hpp>
 
 #include "Helicopter.h"
 #include "Vector3.h"
@@ -52,8 +53,8 @@ void init(void)
 
 	GLfloat light_position[] = { 1, 1.0, 0, 0.0 };
 	GLfloat light_ambient[] = { 0, 0, 0, 1 };
-	GLfloat light_diffuse[] = { 1, 1, 1, 1 };
-	GLfloat light_specular[] = { 1, 1, 1, 1 };
+	GLfloat light_diffuse[] = { 2, 2, 2, 2 };
+	GLfloat light_specular[] = { 2, 2, 2, 2 };
 
 	GLfloat blueLight[]{0, 0, 1, 1};
 	GLfloat redLight[]{1, 0, 0, 1};
@@ -177,7 +178,7 @@ void display()
 	//glPushAttrib(GL_COLOR_MATERIAL_FACE);
 	//GLfloat mat_dif[] = { 0, .3, 0 };
 	//glMaterialfv(GL_FRONT, GL_SPECULAR, mat_dif);
-	const static GLfloat mat_default[]{1, 1, 1, 1};
+	const static GLfloat mat_default[]{.5, .5, .5, 1};
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_default);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_default);
 	glTranslatef(0, -10, 0);
@@ -534,6 +535,33 @@ void mouseButtonPressed(int button, int state, int x, int y)
 	}
 }
 
+GLuint loadTexture(const char* str)
+{
+	GLuint texID;
+
+	// Load image from disk
+	sf::Image image;
+	image.loadFromFile(str);
+
+	// Generate unique ID
+	glGenTextures(1, &texID);
+
+	// Binding to the id??
+	glBindTexture(GL_TEXTURE_2D, texID);
+
+	// RAM -> VRAM
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getSize().x, image.getSize().y, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, image.getPixelsPtr());
+
+	// Set some parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	return texID;
+}
+
 // Main entry point of the program
 int main(int argc, char** argv)
 {
@@ -550,7 +578,9 @@ int main(int argc, char** argv)
 	glutMotionFunc(mouseLook);
 	glutMouseFunc(mouseButtonPressed);
 
-	heli.loadTextures();
+	heli.bodyTexture = loadTexture("resources/camo.jpg");
+	heli.tailTexture = loadTexture("resources/metal_aircraft.jpg");
+	heli.wingTexture = loadTexture("resources/metal_aircraft2.jpg");
 
 	glutMainLoop();
 	return 0;
