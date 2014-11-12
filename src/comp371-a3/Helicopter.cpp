@@ -22,7 +22,8 @@ distanceTravelled{ -M_PI_2 },
 lightAngle{ 0 },
 lightRotSpeed{ 360 },
 highBeams{ false },
-currentMaterial{ MaterialType::Shiny }
+currentMaterial{ MaterialType::Shiny },
+rotateBlueLight{ true }
 {
 	spotDirection[0] = 1;
 	spotDirection[1] = -sqrt(2);
@@ -62,7 +63,11 @@ void Helicopter::update(float deltaTime)
 
 	pilotLook = pilotPos + forward;
 
-	lightAngle += lightRotSpeed * deltaTime;
+	if (rotateBlueLight)
+		lightAngle += lightRotSpeed * deltaTime;
+
+	frontPropAngle += rotorSpeed * deltaTime;
+	backPropAngle += rotorSpeed * deltaTime;
 }
 
 void Helicopter::nextMaterial()
@@ -372,9 +377,6 @@ void Helicopter::drawHeliBody()
 	glScalef(1.5, 1.5, 1.5);
 	drawLandingGear();
 	glPopMatrix();
-
-	frontPropAngle += rotorSpeed;
-	backPropAngle -= rotorSpeed;
 }
 
 void Helicopter::drawHeliTail()

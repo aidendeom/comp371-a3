@@ -33,6 +33,7 @@ public:
 	float topSpeed;
 
 	bool highBeams;
+	bool rotateBlueLight;
 
 	GLfloat spotDirection[3];
 

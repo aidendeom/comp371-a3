@@ -49,6 +49,7 @@ std::vector<Vector3> trackVertices;
 void createTrack()
 {
 	int n = 100;
+	float a = heli.a;
 	float a1 = heli.a - 2.0f;
 	float a2 = heli.a + 2.0f;
 
@@ -63,20 +64,20 @@ void createTrack()
 
 		Vector3 inside
 			(
-			(a1 * sqrt2 * cos_f) / (pow(sin_f, 2) + 1),
+			(a * sqrt2 * cos_f) / (pow(sin_f, 2) + 1),
 			0.0f,
-			(a1 * sqrt2 * cos_f * sin_f) / (pow(sin_f, 2) + 1)
+			(a * sqrt2 * cos_f * sin_f) / (pow(sin_f, 2) + 1)
 			);
 
 		Vector3 outside
 			(
-			(a2 * sqrt2 * cos_f) / (pow(sin_f, 2) + 1),
+			(a * sqrt2 * cos_f) / (pow(sin_f, 2) + 1),
 			0.0f,
-			(a2 * sqrt2 * cos_f * sin_f) / (pow(sin_f, 2) + 1)
+			(a * sqrt2 * cos_f * sin_f) / (pow(sin_f, 2) + 1)
 			);
 
-		trackVertices.emplace_back(inside);
-		trackVertices.emplace_back(outside);
+		trackVertices.emplace_back(inside + Vector3::forward * 3);
+		trackVertices.emplace_back(outside - Vector3::forward * 3);
 	}
 }
 
@@ -136,17 +137,19 @@ void init(void)
 
 void updateSpeed(float delta)
 {
+	static const float mult = 500.0f;
+
 	if (on && heli.speed < heli.topSpeed)
 	{
-		heli.rotorSpeed = heli.speed += heli.accel * delta;
+		heli.rotorSpeed = mult * (heli.speed += heli.accel * delta);
 	}
 	else if (on && heli.speed > heli.topSpeed)
 	{
-		heli.rotorSpeed = heli.speed -= heli.accel * delta;
+		heli.rotorSpeed = mult * (heli.speed -= heli.accel * delta);
 	}
 	else if (!on && heli.speed > 0.0f)
 	{
-		heli.rotorSpeed = heli.speed -= heli.accel * delta;
+		heli.rotorSpeed = mult * (heli.speed -= heli.accel * delta);
 	}
 	else if (!on && heli.speed < 0.0f)
 	{
@@ -197,7 +200,7 @@ void idle(void)
 
 void display()
 {
-
+	// frames to blur
 	static const int n = 10;
 	static int i = 0;
 
@@ -205,7 +208,7 @@ void display()
 	{
 		if (i == 0)
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
 			//glAccum(GL_LOAD, 1.0 / n);
 		}
 		else
@@ -217,7 +220,7 @@ void display()
 	}
 	else
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
 	}
 
 
@@ -241,7 +244,7 @@ void display()
 	if (motionBlur && i >= n)
 	{
 		i = 0;
-		glAccum(GL_ACCUM, 1);
+		//glAccum(GL_ACCUM, 1);
 		glAccum(GL_RETURN, 1.0);
 		glutSwapBuffers();
 	}
@@ -525,6 +528,9 @@ void keyboard(unsigned char key, int x, int y)
 		firstPerson = true;
 		printf_s("First-Person Camera\n");
 		break;
+	case '2':
+		heli.rotateBlueLight = !heli.rotateBlueLight;
+		break;
 	case '3':
 		firstPerson = false;
 		printf_s("Third-Person Camera\n");
@@ -621,7 +627,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);		// Setup display mode to double buffer and RGB color
 	glutInitWindowSize(600, 600);						// Set the screen size
-	wID = glutCreateWindow("Assignment 1");
+	wID = glutCreateWindow("Assignment 3");
 	init();
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
