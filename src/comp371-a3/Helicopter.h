@@ -42,12 +42,13 @@ public:
 	GLuint tailTexture;
 	GLuint wingTexture;
 
+	float a;
+
 	void update(float deltaTime);
 	void drawHelicopter();
 	void nextMaterial();
 
 private:
-	float a;
 	float distanceTravelled;
 	float lightAngle;
 	float lightRotSpeed;

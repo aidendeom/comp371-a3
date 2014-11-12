@@ -9,6 +9,7 @@
 #include <string>
 #include <GL/freeglut.h>
 #include <SFML/Graphics/Image.hpp>
+#include <vector>
 
 #include "Helicopter.h"
 #include "Vector3.h"
@@ -42,6 +43,55 @@ Helicopter heli(50.0f);
 
 auto startTime = std::chrono::high_resolution_clock::now();
 auto lastTime = std::chrono::high_resolution_clock::now();
+
+std::vector<Vector3> trackVertices;
+
+void createTrack()
+{
+	int n = 100;
+	float a1 = heli.a - 2.0f;
+	float a2 = heli.a + 2.0f;
+
+	float dist = 2 * M_PI;
+	float delta = dist / n;
+
+	for (float f = 0; f <= dist; f += delta)
+	{
+		float sin_f = sinf(f);
+		float cos_f = cosf(f);
+		static const float sqrt2 = sqrt(2);
+
+		Vector3 inside
+			(
+			(a1 * sqrt2 * cos_f) / (pow(sin_f, 2) + 1),
+			0.0f,
+			(a1 * sqrt2 * cos_f * sin_f) / (pow(sin_f, 2) + 1)
+			);
+
+		Vector3 outside
+			(
+			(a2 * sqrt2 * cos_f) / (pow(sin_f, 2) + 1),
+			0.0f,
+			(a2 * sqrt2 * cos_f * sin_f) / (pow(sin_f, 2) + 1)
+			);
+
+		trackVertices.emplace_back(inside);
+		trackVertices.emplace_back(outside);
+	}
+}
+
+void drawTrack()
+{
+	glBegin(GL_QUAD_STRIP);
+	for (size_t i = 0; i < trackVertices.size(); i++)
+	{
+		GLfloat v[3];
+		vec2arr(trackVertices[i], v);
+		glNormal3f(0, 1, 0);
+		glVertex3fv(v);
+	}
+	glEnd();
+}
 
 // Initiliaze the OpenGL window
 void init(void)
@@ -80,6 +130,8 @@ void init(void)
 	glEnable(GL_LIGHT3);
 
 	glShadeModel(GL_SMOOTH);
+
+	createTrack();
 }
 
 void updateSpeed(float delta)
@@ -181,8 +233,9 @@ void display()
 	const static GLfloat mat_default[]{.5, .5, .5, 1};
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_default);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_default);
-	glTranslatef(0, -10, 0);
-	glutSolidTeapot(10);
+	glTranslatef(0, -3, 0);
+	//glutSolidTeapot(10);
+	drawTrack();
 	//glPopAttrib();
 	glPopMatrix();
 	if (motionBlur && i >= n)
