@@ -44,6 +44,7 @@ Helicopter heli(50.0f);
 auto startTime = std::chrono::high_resolution_clock::now();
 auto lastTime = std::chrono::high_resolution_clock::now();
 
+int framesToBlur = 10;
 std::vector<Vector3> trackVertices;
 
 void createTrack()
@@ -200,8 +201,6 @@ void idle(void)
 
 void display()
 {
-	// frames to blur
-	static const int n = 10;
 	static int i = 0;
 
 	if (motionBlur)
@@ -213,7 +212,7 @@ void display()
 		}
 		else
 		{
-			glAccum(GL_ACCUM, 1.0 / n);
+			glAccum(GL_ACCUM, 1.0 / framesToBlur);
 		}
 
 		i++;
@@ -241,7 +240,7 @@ void display()
 	drawTrack();
 	//glPopAttrib();
 	glPopMatrix();
-	if (motionBlur && i >= n)
+	if (motionBlur && i >= framesToBlur)
 	{
 		i = 0;
 		//glAccum(GL_ACCUM, 1);
@@ -546,6 +545,16 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'n':
 		heli.nextMaterial();
+		break;
+	case '+':
+		framesToBlur++;
+		printf_s("Blurring over %d frames\n", framesToBlur);
+		break;
+	case '-':
+		framesToBlur--;
+		if (framesToBlur <= 1)
+			framesToBlur = 2;
+		printf_s("Blurring over %d frames\n", framesToBlur);
 		break;
 	case 27: // Escape key
 		printf_s("Goodbye!\n");
